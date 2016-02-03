@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+
+<div ng-controller="BalanceTableCtrl" class="container container-main">
+    <div class="page-header">
+        <h1>{{balance | currency: '\u006c\u0065\u0069'}}</h1>
+    </div>
+    <div class="align-center">
+        <div class="btn-group" role="group">
+            <a href="#/" class="btn btn-default">Balance</a>
+            <a href="#/income" class="btn btn-default">Income</a>
+            <a href="#/spendings" class="btn btn-default">Spendings</a>
+        </div>
+    </div>
+    <div class="table-container">
+        <table class="table table-hover">
+            <tbody>
+            <tr ng-class="0 < transaction.amount ? 'green' : 'red'" ng-repeat="transaction in transactions">
+                <td>{{transaction.date | date:'MM @ hh-mm'}}</td>
+                <td>{{transaction.description}}</td>
+                <td>{{transaction.amount}}</td>
+                <td width="40">
+                    <button type="button" class="btn btn-xs btn-danger"><i class="glyphicon glyphicon-remove"></i>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="buttons">
+        <a href="#/receive" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i> Receive</a>
+        <a href="#/spend" class="btn btn-default right">Spend <i class="glyphicon glyphicon-minus"></i></a>
+    </div>
+    <nav>
+        <ul class="pagination">
+            <li class="disabled"><a href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+            <li class="active"><a href="#">Feb 2016</a></li>
+            <li><a href="#">Jan 2016</a></li>
+            <li><a href="#">Dec 2015</a></li>
+            <li><a href="#">Nov 2015</a></li>
+            <li><a href="#">Oct 2015</a></li>
+            <li><a href="#">Sep 2015</a></li>
+            <li><a href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
+        </ul>
+    </nav>
+</div>
