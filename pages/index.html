@@ -6,9 +6,9 @@
     </div>
     <div class="align-center">
         <div class="btn-group" role="group">
-            <a href="#/" class="btn btn-default">Balance</a>
-            <a href="#/income" class="btn btn-default">Income</a>
-            <a href="#/spendings" class="btn btn-default">Spendings</a>
+            <a href="/" class="btn btn-default">Balance</a>
+            <a href="/income" class="btn btn-default">Income</a>
+            <a href="/spendings" class="btn btn-default">Spendings</a>
         </div>
     </div>
     <div class="table-container">
@@ -19,7 +19,7 @@
                 <td>{{transaction.description}}</td>
                 <td>{{transaction.amount}}</td>
                 <td width="40">
-                    <button type="button" class="btn btn-xs btn-danger"><i class="glyphicon glyphicon-remove"></i>
+                    <button type="button" ng-click = "deleteTransaction(transaction.id)" class="btn btn-xs btn-danger"><i class="glyphicon glyphicon-remove"></i>
                     </button>
                 </td>
             </tr>
@@ -27,8 +27,8 @@
         </table>
     </div>
     <div class="buttons">
-        <a href="#/receive" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i> Receive</a>
-        <a href="#/spend" class="btn btn-default right">Spend <i class="glyphicon glyphicon-minus"></i></a>
+        <a href="/receive" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i> Receive</a>
+        <a href="/spend" class="btn btn-default right">Spend <i class="glyphicon glyphicon-minus"></i></a>
     </div>
     <nav>
         <ul class="pagination">

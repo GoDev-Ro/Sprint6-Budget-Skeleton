@@ -1,103 +1,139 @@
-var app = angular.module('app', ['ngRoute']);
-var transactionDefault = {
-    date: "",
-    description: "",
-    amount: ""
-};
-
-app.config(function ($routeProvider) {
-    $routeProvider.when("/",
-        {
-            templateUrl: "balanceBody.html",
-            controller: "BalanceTableCtrl",
-            controllerAs: "app"
-        }
-        )
-        .when("/spend",
-            {
-                templateUrl: "spend.html",
-                controller: "SpendCtrl",
-                controllerAs: "app"
-            }
-        )
-        .when("/receive",
-            {
-                templateUrl: "receive.html",
-                controller: "ReceiveCtrl",
-                controllerAs: "app"
-            }
-        )
-        .when("/cancel",
-            {
-                templateUrl: "balanceBody.html",
-                controller: "BalanceTableCtrl",
-                controllerAs: "app"
-            }
-        )
-        .when("/income",
-            {
-                templateUrl: "incomeBody.html",
-                controller: "BalanceTableCtrl",
-                controllerAs: "app"
-            }
-        )
-        .when("/spendings",
-            {
-                templateUrl: "spendingsBody.html",
-                controller: "BalanceTableCtrl",
-                controllerAs: "app"
-            }
-        )
-});
-
-app.controller('BalanceTableCtrl', function ($scope) {
-    $scope.transactions = [
-        {
-            "description": "Cina in oras",
-            "amount": -80,
-            "date": "2016-02-02 21:34",
-            "id": 0
-        },
-        {
-            "description": "Intretinere",
-            "amount": -250,
-            "date": "2016-02-02 17:43",
-            "id": 1
-        },
-        {
-            "description": "Salariu",
-            "amount": 2500,
-            "date": "2016-02-01 10:00",
-            "id": 2
-        }
+(function () {
+    var app = angular.module('app', ['ngRoute']);
+    var transactionDefault = {
+        date: "",
+        description: "",
+        amount: ""
+    };
+    var pages = [
+        {name: 'Balance', url: ''},
+        {name: 'Receive', url: 'receive'},
+        {name: 'Spend', url: 'spend'},
     ];
-    $scope.balance = 2170;
-});
 
-app.controller('ReceiveCtrl', function ($scope, $http) {
-    $scope.newTransaction = transactionDefault;
-    $scope.add = function () {
-        $http({
-            method: 'POST',
-            url: 'http://server.godev.ro:8080/api/razvan/transactions/2016-02',
-            data: $scope.newTransaction
-        }).then(function () {
-            $scope.newTransaction = transactionDefault;
+    app.config(function ($routeProvider, $locationProvider) {
+        $locationProvider.html5Mode({
+            enabled: true,
+            requireBase: false
         });
-    };
-});
 
-app.controller('SpendCtrl', function ($scope, $http) {
-    $scope.newTransaction = transactionDefault;
-    $scope.add = function () {
-        $scope.newTransaction.amount = -$scope.newTransaction.amount;
-        $http({
-            method: 'POST',
-            url: 'http://server.godev.ro:8080/api/razvan/transactions/2016-02',
-            data: $scope.newTransaction
-        }).then(function () {
-            $scope.newTransaction = transactionDefault;
+        angular.forEach(pages, function (page) {
+            $routeProvider.when('/' + page.url, {
+                templateUrl: 'pages/' + (!page.url ? 'index' : page.url) + '.html'
+            })
         });
-    };
-});
+
+        $routeProvider.otherwise({
+            templateUrl: 'pages/index.html'
+        });
+    });
+
+//create controllers
+    app.controller('BalanceTableCtrl', function ($scope, TransactionStore) {
+        $scope.transactions = [];
+        $scope.balance = 0;
+        TransactionStore.getTransactionsInMonth("2016-02", $scope);
+
+        $scope.deleteTransaction = function (id) {
+            TransactionStore.delete(id).then(function () {
+                $scope.balance = 0;
+                TransactionStore.getTransactionsInMonth("2016-02", $scope);
+            });
+        };
+    });
+
+    app.controller('ReceiveCtrl', function ($scope, TransactionStore) {
+        $scope.newTransaction = transactionDefault;
+        $scope.addTrans = function () {
+            TransactionStore.add($scope.newTransaction).then(function () {
+                $scope.newTransaction = transactionDefault;
+            });
+        };
+    });
+
+    app.controller('SpendCtrl', function ($scope, TransactionStore) {
+        $scope.newTransaction = transactionDefault;
+        $scope.addTrans = function () {
+            $scope.newTransaction.amount = -$scope.newTransaction.amount;
+            TransactionStore.add($scope.newTransaction).then(function () {
+                $scope.newTransaction = transactionDefault;
+            });
+        };
+    });
+
+    //create services
+    app.factory('TransactionStore', function($http, $q) {
+        return (function() {
+            var URL = 'http://server.godev.ro:8080/api/razvan/transactions';
+
+            var getTransactionsInMonth = function(month, $scope) {
+                return $q(function(resolve, reject) {
+                    $http({url: URL + '?month=' + month})
+                        .then(
+                            function(xhr) {
+                                if (xhr.status == 200) {
+                                    $scope.transactions = xhr.data;
+                                    angular.forEach(xhr.data, function (data) {
+                                        $scope.balance += data.amount;
+                                    });
+                                    resolve(xhr.data);
+                                } else {
+                                    reject();
+                                }
+                            },
+                            reject
+                        );
+                });
+            };
+
+            var add = function(data) {
+                return $q(function(resolve, reject) {
+                    $http({
+                        url: URL,
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        data: JSON.stringify(data)
+                    })
+                        .then(
+                            function(xhr) {
+                                if (xhr.status == 201) {
+                                    resolve(xhr.data);
+                                } else {
+                                    reject();
+                                }
+                            },
+                            reject
+                        );
+                });
+            };
+
+            var del = function(id) {
+                return $q(function(resolve, reject) {
+                    $http({
+                        url: URL + '/' + id,
+                        method: 'DELETE'
+                    })
+                        .then(
+                            function(xhr) {
+                                if (xhr.status == 204) {
+                                    resolve();
+                                } else {
+                                    reject();
+                                }
+                            },
+                            reject
+                        );
+                });
+            };
+
+            return {
+                getTransactionsInMonth: getTransactionsInMonth,
+                add: add,
+                delete: del
+            };
+        })();
+    });
+})();
 
