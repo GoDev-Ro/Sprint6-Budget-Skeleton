@@ -10,6 +10,8 @@
         {name: 'Receive', url: 'receive'},
         {name: 'Spend', url: 'spend'},
     ];
+    var minFilter = -Infinity;
+    var maxFilter = +Infinity;
 
     app.config(function ($routeProvider, $locationProvider) {
         $locationProvider.html5Mode({
@@ -40,13 +42,19 @@
                 TransactionStore.getTransactionsInMonth("2016-02", $scope);
             });
         };
+        $scope.setMinMaxFilter = function (min, max) {
+            minFilter = min;
+            maxFilter = max;
+        };
     });
 
     app.controller('ReceiveCtrl', function ($scope, TransactionStore) {
         $scope.newTransaction = transactionDefault;
         $scope.addTrans = function () {
             TransactionStore.add($scope.newTransaction).then(function () {
-                $scope.newTransaction = transactionDefault;
+                $scope.newTransaction.amount = "" ;
+                $scope.newTransaction.description = "" ;
+                $scope.newTransaction.date = "" ;
             });
         };
     });
@@ -56,8 +64,21 @@
         $scope.addTrans = function () {
             $scope.newTransaction.amount = -$scope.newTransaction.amount;
             TransactionStore.add($scope.newTransaction).then(function () {
-                $scope.newTransaction = transactionDefault;
+                $scope.newTransaction.amount = "" ;
+                $scope.newTransaction.description = "" ;
+                $scope.newTransaction.date = "" ;
             });
+        };
+    });
+
+    //create filter
+
+    app.filter('amount', function () {
+        return function (transactions) {
+            transactions = transactions.filter(function (transaction) {
+                return transaction.amount > minFilter && transaction.amount < maxFilter;
+            });
+            return transactions;
         };
     });
 
