@@ -32,14 +32,9 @@
     </div>
     <nav>
         <ul class="pagination">
-            <li class="disabled"><a href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
-            <li class="active"><a href="#">Feb 2016</a></li>
-            <li><a href="#">Jan 2016</a></li>
-            <li><a href="#">Dec 2015</a></li>
-            <li><a href="#">Nov 2015</a></li>
-            <li><a href="#">Oct 2015</a></li>
-            <li><a href="#">Sep 2015</a></li>
-            <li><a href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
+            <li><a href="#" ng-click="getPreviousMonths()" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+            <li ng-click="setTableByMonth(data.month,data.year)" ng-repeat="data in last6Months"><a href="#">{{data.month}} {{data.year}}</a></li>
+            <li><a href="#" ng-click="getNextMonths()" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
         </ul>
     </nav>
 </div>

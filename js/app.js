@@ -34,6 +34,7 @@
     app.controller('BalanceTableCtrl', function ($scope, TransactionStore) {
         $scope.transactions = [];
         $scope.balance = 0;
+        $scope.last6Months = [];
         TransactionStore.getTransactionsInMonth("2016-02", $scope);
 
         $scope.deleteTransaction = function (id) {
@@ -76,6 +77,62 @@
                 });
             }
         };
+
+        $scope.getCurrentMonth = function () {
+            return moment().format("M");
+        };
+        $scope.getCurrentYear = function () {
+            return moment().format("YYYY");
+        };
+        $scope.setLast6Months = function (month, year) {
+            var localMonth = parseInt(month);
+            var localYear = parseInt(year);
+            $scope.last6Months = [];
+            $scope.last6Months.push({month: localMonth, year: localYear});
+            for(var i = 0; i<5; i++){
+                if(localMonth > 1) {
+                    localMonth --;
+                } else {
+                    localMonth = 12;
+                    localYear -= 1;
+                }
+                $scope.last6Months.push({month: localMonth, year: localYear});
+            }
+        };
+        $scope.getNextMonths = function () {
+            var localMonth = $scope.last6Months[1].month;
+            var localYear = $scope.last6Months[1].year;
+            $scope.setLast6Months(localMonth, localYear);
+        };
+        $scope.getPreviousMonths = function () {
+            var localMonth = $scope.last6Months[0].month;
+            var localYear = $scope.last6Months[0].year;
+            if(((moment().format('YYYY')>localYear))){
+                if(localMonth == 12){
+                    localMonth = 1;
+                    localYear++;
+                } else {
+                    localMonth++;
+                }
+                $scope.setLast6Months(localMonth, localYear);
+            } else if (moment().format('YYYY') == localYear) {
+                if(moment().format('M')>localMonth){
+                    localMonth++;
+                }
+                $scope.setLast6Months(localMonth, localYear);
+            }
+        };
+        $scope.setTableByMonth = function (month, year) {
+            var date = year;
+            if(month < 10) {
+                date = date+'-0'+month;
+            } else {
+                date = date+'-'+month;
+            }
+            $scope.balance = 0;
+            TransactionStore.getTransactionsInMonth(date, $scope);
+        };
+        $scope.setLast6Months($scope.getCurrentMonth(), $scope.getCurrentYear());
     });
 
     app.controller('ReceiveCtrl', function ($scope, TransactionStore) {
@@ -101,7 +158,7 @@
         };
     });
 
-    //create filter
+    //create filters
 
     app.filter('amount', function () {
         return function (transactions) {
