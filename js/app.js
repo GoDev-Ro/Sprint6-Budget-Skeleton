@@ -35,12 +35,14 @@
         $scope.transactions = [];
         $scope.balance = 0;
         $scope.last6Months = [];
-        TransactionStore.getTransactionsInMonth("2016-02", $scope);
+        TransactionStore.getTransactionsInMonth(moment().format("YYYY-MM"), $scope);
 
-        $scope.deleteTransaction = function (id) {
+        $scope.deleteTransaction = function (id, date) {
+            var localMonth = moment(date).format("MM");
+            var localYear = moment(date).format("YYYY");
             TransactionStore.delete(id).then(function () {
                 $scope.balance = 0;
-                TransactionStore.getTransactionsInMonth("2016-02", $scope);
+                TransactionStore.getTransactionsInMonth(localYear+'-'+localMonth, $scope);
             });
         };
         $scope.setMinMaxFilter = function (min, max) {
