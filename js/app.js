@@ -10,8 +10,8 @@
         {name: 'Receive', url: 'receive'},
         {name: 'Spend', url: 'spend'},
     ];
-    var minFilter = -Infinity;
-    var maxFilter = +Infinity;
+    var minFilter = -9999999999;
+    var maxFilter = +9999999999;
 
     app.config(function ($routeProvider, $locationProvider) {
         $locationProvider.html5Mode({
@@ -45,6 +45,36 @@
         $scope.setMinMaxFilter = function (min, max) {
             minFilter = min;
             maxFilter = max;
+        };
+        $scope.getMinFilter = function () {
+            return minFilter;
+        };
+        $scope.getMaxFilter = function () {
+            return maxFilter;
+        };
+        $scope.changeBalanceByFilter = function () {
+            $scope.balance = 0;
+
+            if((minFilter != 0)&&(maxFilter == 0)) {
+                angular.forEach($scope.transactions, function (data) {
+                    if (data.amount < 0){
+                        $scope.balance += data.amount;
+                    }
+                });
+                $scope.balance = Math.abs($scope.balance);
+            } else if ((minFilter < 0)&&(maxFilter > 0)) {
+                angular.forEach($scope.transactions, function (data) {
+                    if (data.amount){
+                        $scope.balance += data.amount;
+                    }
+                });
+            } else if ((maxFilter!= 0)&&(minFilter == 0)) {
+                angular.forEach($scope.transactions, function (data) {
+                    if (data.amount > 0){
+                        $scope.balance += data.amount;
+                    }
+                });
+            }
         };
     });
 

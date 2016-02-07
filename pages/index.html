@@ -6,15 +6,15 @@
     </div>
     <div class="align-center">
         <div class="btn-group" role="group">
-            <a href="/" ng-click="setMinMaxFilter(-999999999999, 999999999999)" class="btn btn-default">Balance</a>
-            <a href="/income" ng-click="setMinMaxFilter(0, 999999999999)" class="btn btn-default">Income</a>
-            <a href="/spendings" ng-click="setMinMaxFilter(-99999999999, 0)" class="btn btn-default">Spendings</a>
+            <a ng-init="tog=1" ng-click="setMinMaxFilter(-999999999999, 999999999999); changeBalanceByFilter(); tog=1" class="btn btn-default" ng-class='{"btn-primary":tog==1}'>Balance</a>
+            <a ng-click="setMinMaxFilter(0, 999999999999); changeBalanceByFilter(); tog=2" class="btn btn-default" ng-class='{"btn-primary":tog==2}'>Income</a>
+            <a ng-click="setMinMaxFilter(-99999999999, 0); changeBalanceByFilter(); tog=3" class="btn btn-default" ng-class='{"btn-primary":tog==3}'>Spendings</a>
         </div>
     </div>
     <div class="table-container">
         <table class="table table-hover">
             <tbody>
-            <tr ng-class="0 < transaction.amount ? 'green' : 'red'" ng-repeat="transaction in transactions | amount:-999999:999999">
+            <tr ng-class="(((getMinFilter()==0)||(getMaxFilter()==0)) ? 0 : 0 < transaction.amount ? 'green' : 'red')" ng-repeat="transaction in transactions | amount:-999999:999999">
                 <td>{{transaction.date | date:"MM @ h:mma"}}</td>
                 <td>{{transaction.description}}</td>
                 <td>{{transaction.amount}}</td>
