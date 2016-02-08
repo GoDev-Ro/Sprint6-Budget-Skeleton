@@ -42,7 +42,7 @@
             var localYear = moment(date).format("YYYY");
             TransactionStore.delete(id).then(function () {
                 $scope.balance = 0;
-                TransactionStore.getTransactionsInMonth(localYear+'-'+localMonth, $scope);
+                TransactionStore.getTransactionsInMonth(localYear + '-' + localMonth, $scope);
             });
         };
         $scope.setMinMaxFilter = function (min, max) {
@@ -58,22 +58,22 @@
         $scope.changeBalanceByFilter = function () {
             $scope.balance = 0;
 
-            if((minFilter != 0)&&(maxFilter == 0)) {
+            if ((minFilter != 0) && (maxFilter == 0)) {
                 angular.forEach($scope.transactions, function (data) {
-                    if (data.amount < 0){
+                    if (data.amount < 0) {
                         $scope.balance += data.amount;
                     }
                 });
                 $scope.balance = Math.abs($scope.balance);
-            } else if ((minFilter < 0)&&(maxFilter > 0)) {
+            } else if ((minFilter < 0) && (maxFilter > 0)) {
                 angular.forEach($scope.transactions, function (data) {
-                    if (data.amount){
+                    if (data.amount) {
                         $scope.balance += data.amount;
                     }
                 });
-            } else if ((maxFilter!= 0)&&(minFilter == 0)) {
+            } else if ((maxFilter != 0) && (minFilter == 0)) {
                 angular.forEach($scope.transactions, function (data) {
-                    if (data.amount > 0){
+                    if (data.amount > 0) {
                         $scope.balance += data.amount;
                     }
                 });
@@ -91,9 +91,9 @@
             var localYear = parseInt(year);
             $scope.last6Months = [];
             $scope.last6Months.push({month: localMonth, year: localYear});
-            for(var i = 0; i<5; i++){
-                if(localMonth > 1) {
-                    localMonth --;
+            for (var i = 0; i < 5; i++) {
+                if (localMonth > 1) {
+                    localMonth--;
                 } else {
                     localMonth = 12;
                     localYear -= 1;
@@ -109,8 +109,8 @@
         $scope.getPreviousMonths = function () {
             var localMonth = $scope.last6Months[0].month;
             var localYear = $scope.last6Months[0].year;
-            if(((moment().format('YYYY')>localYear))){
-                if(localMonth == 12){
+            if (((moment().format('YYYY') > localYear))) {
+                if (localMonth == 12) {
                     localMonth = 1;
                     localYear++;
                 } else {
@@ -118,7 +118,7 @@
                 }
                 $scope.setLast6Months(localMonth, localYear);
             } else if (moment().format('YYYY') == localYear) {
-                if(moment().format('M')>localMonth){
+                if (moment().format('M') > localMonth) {
                     localMonth++;
                 }
                 $scope.setLast6Months(localMonth, localYear);
@@ -126,10 +126,10 @@
         };
         $scope.setTableByMonth = function (month, year) {
             var date = year;
-            if(month < 10) {
-                date = date+'-0'+month;
+            if (month < 10) {
+                date = date + '-0' + month;
             } else {
-                date = date+'-'+month;
+                date = date + '-' + month;
             }
             $scope.balance = 0;
             TransactionStore.getTransactionsInMonth(date, $scope);
@@ -141,9 +141,9 @@
         $scope.newTransaction = transactionDefault;
         $scope.addTrans = function () {
             TransactionStore.add($scope.newTransaction).then(function () {
-                $scope.newTransaction.amount = "" ;
-                $scope.newTransaction.description = "" ;
-                $scope.newTransaction.date = "" ;
+                $scope.newTransaction.amount = "";
+                $scope.newTransaction.description = "";
+                $scope.newTransaction.date = "";
             });
         };
     });
@@ -153,9 +153,9 @@
         $scope.addTrans = function () {
             $scope.newTransaction.amount = -$scope.newTransaction.amount;
             TransactionStore.add($scope.newTransaction).then(function () {
-                $scope.newTransaction.amount = "" ;
-                $scope.newTransaction.description = "" ;
-                $scope.newTransaction.date = "" ;
+                $scope.newTransaction.amount = "";
+                $scope.newTransaction.description = "";
+                $scope.newTransaction.date = "";
             });
         };
     });
@@ -171,16 +171,22 @@
         };
     });
 
+    app.filter('toMonth', function () {
+        return function (month) {
+            return moment('2016-' + month).format("MMM");
+        };
+    })
+
     //create services
-    app.factory('TransactionStore', function($http, $q) {
-        return (function() {
+    app.factory('TransactionStore', function ($http, $q) {
+        return (function () {
             var URL = 'http://server.godev.ro:8080/api/razvan/transactions';
 
-            var getTransactionsInMonth = function(month, $scope) {
-                return $q(function(resolve, reject) {
+            var getTransactionsInMonth = function (month, $scope) {
+                return $q(function (resolve, reject) {
                     $http({url: URL + '?month=' + month})
                         .then(
-                            function(xhr) {
+                            function (xhr) {
                                 if (xhr.status == 200) {
                                     $scope.transactions = xhr.data;
                                     angular.forEach(xhr.data, function (data) {
@@ -196,8 +202,8 @@
                 });
             };
 
-            var add = function(data) {
-                return $q(function(resolve, reject) {
+            var add = function (data) {
+                return $q(function (resolve, reject) {
                     $http({
                         url: URL,
                         method: 'POST',
@@ -207,7 +213,7 @@
                         data: JSON.stringify(data)
                     })
                         .then(
-                            function(xhr) {
+                            function (xhr) {
                                 if (xhr.status == 201) {
                                     resolve(xhr.data);
                                 } else {
@@ -219,14 +225,14 @@
                 });
             };
 
-            var del = function(id) {
-                return $q(function(resolve, reject) {
+            var del = function (id) {
+                return $q(function (resolve, reject) {
                     $http({
                         url: URL + '/' + id,
                         method: 'DELETE'
                     })
                         .then(
-                            function(xhr) {
+                            function (xhr) {
                                 if (xhr.status == 204) {
                                     resolve();
                                 } else {
