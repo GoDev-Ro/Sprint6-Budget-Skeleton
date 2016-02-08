@@ -10,8 +10,7 @@
         {name: 'Receive', url: 'receive'},
         {name: 'Spend', url: 'spend'},
     ];
-    var minFilter = -9999999999;
-    var maxFilter = +9999999999;
+    var filterValue = 'balance';
 
     app.config(function ($routeProvider, $locationProvider) {
         $locationProvider.html5Mode({
@@ -35,43 +34,49 @@
         $scope.transactions = [];
         $scope.balance = 0;
         $scope.last6Months = [];
-        TransactionStore.getTransactionsInMonth(moment().format("YYYY-MM"), $scope);
+        TransactionStore.getTransactionsInMonth(moment().format("YYYY-MM"), $scope).then(function (data) {
+            $scope.transactions = data;
+            angular.forEach(data, function (value) {
+                $scope.balance += value.amount;
+            });
+        });
 
         $scope.deleteTransaction = function (id, date) {
             var localMonth = moment(date).format("MM");
             var localYear = moment(date).format("YYYY");
             TransactionStore.delete(id).then(function () {
                 $scope.balance = 0;
-                TransactionStore.getTransactionsInMonth(localYear + '-' + localMonth, $scope);
+                TransactionStore.getTransactionsInMonth(localYear + '-' + localMonth, $scope).then(function (data) {
+                    $scope.transactions = data;
+                    angular.forEach(data, function (value) {
+                        $scope.balance += value.amount;
+                    });
+                });
             });
         };
-        $scope.setMinMaxFilter = function (min, max) {
-            minFilter = min;
-            maxFilter = max;
+        $scope.setFilter = function (val) {
+            filterValue = val;
         };
-        $scope.getMinFilter = function () {
-            return minFilter;
-        };
-        $scope.getMaxFilter = function () {
-            return maxFilter;
+        $scope.getFilterValue = function () {
+            return filterValue;
         };
         $scope.changeBalanceByFilter = function () {
             $scope.balance = 0;
 
-            if ((minFilter != 0) && (maxFilter == 0)) {
+            if (filterValue == 'spending') {
                 angular.forEach($scope.transactions, function (data) {
                     if (data.amount < 0) {
                         $scope.balance += data.amount;
                     }
                 });
                 $scope.balance = Math.abs($scope.balance);
-            } else if ((minFilter < 0) && (maxFilter > 0)) {
+            } else if (filterValue == 'balance') {
                 angular.forEach($scope.transactions, function (data) {
                     if (data.amount) {
                         $scope.balance += data.amount;
                     }
                 });
-            } else if ((maxFilter != 0) && (minFilter == 0)) {
+            } else if (filterValue == 'income') {
                 angular.forEach($scope.transactions, function (data) {
                     if (data.amount > 0) {
                         $scope.balance += data.amount;
@@ -132,7 +137,12 @@
                 date = date + '-' + month;
             }
             $scope.balance = 0;
-            TransactionStore.getTransactionsInMonth(date, $scope);
+            TransactionStore.getTransactionsInMonth(date, $scope).then(function (data) {
+                $scope.transactions = data;
+                angular.forEach(data, function (value) {
+                    $scope.balance += value.amount;
+                });
+            });
         };
         $scope.setLast6Months($scope.getCurrentMonth(), $scope.getCurrentYear());
     });
@@ -164,6 +174,18 @@
 
     app.filter('amount', function () {
         return function (transactions) {
+            var minFilter = 0;
+            var maxFilter = 0;
+            if (filterValue == 'balance'){
+                minFilter = -999999999999;
+                maxFilter = 999999999999;
+            } else if(filterValue == 'income') {
+                minFilter = 0;
+                maxFilter = 999999999999;
+            } else {
+                minFilter = -999999999999;
+                maxFilter = 0;
+            }
             transactions = transactions.filter(function (transaction) {
                 return transaction.amount > minFilter && transaction.amount < maxFilter;
             });
@@ -188,10 +210,6 @@
                         .then(
                             function (xhr) {
                                 if (xhr.status == 200) {
-                                    $scope.transactions = xhr.data;
-                                    angular.forEach(xhr.data, function (data) {
-                                        $scope.balance += data.amount;
-                                    });
                                     resolve(xhr.data);
                                 } else {
                                     reject();
